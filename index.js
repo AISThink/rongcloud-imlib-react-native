@@ -36,6 +36,6 @@ export default {
         return RongCloudIMLib.abc();
     },
     disconnet (){
-        console.log('disconnet');
+        RongCloudIMLib.disconnet();
     }
 };

@@ -105,6 +105,10 @@ RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush) {
     [[self getClient] disconnect:isReceivePush];
 }
 
+RCT_EXPORT_METHOD(disconnect {
+    [[self getClient] disconnect];
+}
+
 
 RCT_EXPORT_METHOD(abc:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {

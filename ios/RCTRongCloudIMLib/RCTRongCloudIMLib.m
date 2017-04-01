@@ -105,6 +105,42 @@ RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush) {
     [[self getClient] disconnect:isReceivePush];
 }
 
+
+RCT_EXPORT_METHOD(abc:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+
+        NSLog(@"in abc");
+        NSArray *conversationList = [[self getClient]
+                          getConversationList:@[@(ConversationType_PRIVATE),
+                                                @(ConversationType_DISCUSSION),
+                                                @(ConversationType_GROUP),
+                                                @(ConversationType_SYSTEM),
+                                                @(ConversationType_APPSERVICE),
+                                                @(ConversationType_PUBLICSERVICE)]];
+    
+        NSMutableArray * arr = [[NSMutableArray alloc] init];
+
+        for (RCConversation *conversation in conversationList) {
+            NSLog(@"会话类型：%lu，目标会话ID：%@, 最后消息：%s", (unsigned long)conversation.conversationType, 
+                conversation.targetId,conversation.lastestMessage.description);
+            
+            [arr addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                           conversation.targetId , @"targetId",
+                           [(RCTextMessage*)conversation.lastestMessage content] , @"lastestMessage",
+                            nil]];
+            NSLog(@"--------------------");
+        }
+    
+    
+    
+        NSError * parseError = nil;
+        NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: &parseError ];
+        NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+       
+        resolve(jsonString);
+
+}
+
 -(RCIMClient *) getClient {
     return [RCIMClient sharedRCIMClient];
 }

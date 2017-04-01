@@ -31,5 +31,11 @@ export default {
     },
     sendTextMessage (conversationType, targetId, content) {
         return RongCloudIMLib.sendTextMessage(conversationType, targetId, content, content);
+    },
+    abc (){
+        return RongCloudIMLib.abc();
+    },
+    disconnet (){
+        console.log('disconnet');
     }
 };

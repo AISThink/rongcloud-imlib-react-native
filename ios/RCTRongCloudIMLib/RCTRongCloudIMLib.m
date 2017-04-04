@@ -8,6 +8,7 @@
 
 #import "RCTRongCloudIMLib.h"
 
+
 @implementation RCTRongCloudIMLib
 @synthesize bridge = _bridge;
 
@@ -28,6 +29,7 @@ RCT_EXPORT_METHOD(connectWithToken:(NSString *) token
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     NSLog(@"connectWithToken %@", token);
+    //NSLog(@"connect_status %ld", (long)[[self getClient] getConnectionStatus]);
     
     void (^successBlock)(NSString *userId);
     successBlock = ^(NSString* userId) {
@@ -78,7 +80,14 @@ RCT_EXPORT_METHOD(connectWithToken:(NSString *) token
         reject(@"TOKEN_INCORRECT", @"tokenIncorrect", nil);
     };
     
-    [[self getClient] connectWithToken:token success:successBlock error:errorBlock tokenIncorrect:tokenIncorrectBlock];
+    NSInteger connectStatus = [[self getClient] getConnectionStatus];
+    
+    if(connectStatus != ConnectionStatus_Connected
+       && connectStatus != ConnectionStatus_Connecting){
+        [[self getClient] connectWithToken:token success:successBlock error:errorBlock tokenIncorrect:tokenIncorrectBlock];
+    }    
+
+    //NSLog(@"connect_status %ld", (long)[[self getClient] getConnectionStatus]);
     
 }
 
@@ -101,19 +110,16 @@ RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
     resolve(version);
 }
 
-RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush) {
+RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject
+                                            ) {
     [[self getClient] disconnect:isReceivePush];
 }
 
-RCT_EXPORT_METHOD(disconnect {
-    [[self getClient] disconnect];
-}
-
-
-RCT_EXPORT_METHOD(abc:(RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
 
-        NSLog(@"in abc");
         NSArray *conversationList = [[self getClient]
                           getConversationList:@[@(ConversationType_PRIVATE),
                                                 @(ConversationType_DISCUSSION),
@@ -123,26 +129,123 @@ RCT_EXPORT_METHOD(abc:(RCTPromiseResolveBlock)resolve
                                                 @(ConversationType_PUBLICSERVICE)]];
     
         NSMutableArray * arr = [[NSMutableArray alloc] init];
+    
 
         for (RCConversation *conversation in conversationList) {
-            NSLog(@"会话类型：%lu，目标会话ID：%@, 最后消息：%s", (unsigned long)conversation.conversationType, 
-                conversation.targetId,conversation.lastestMessage.description);
+          
+            //最后一条消息的发送日期
+//            NSDate*detaildate=[NSDate dateWithTimeIntervalSince1970:conversation.receivedTime];
+            NSNumber * receivedTime     =   [NSNumber numberWithLongLong: conversation.receivedTime];
+            NSNumber * converstationType=   [NSNumber numberWithUnsignedInteger:conversation.conversationType];
+            NSNumber * unreadMsgCount   =   [NSNumber numberWithLongLong: conversation.unreadMessageCount];
+            NSString * isTop            =   conversation.isTop?@"1":@"0";
             
+            //组织会话json对象
             [arr addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                           conversation.targetId , @"targetId",
+                            conversation.targetId ,         @"targetId",
+                            converstationType,              @"conversationType",
+                            conversation.conversationTitle, @"conversationTitle",
+                            receivedTime,                   @"lastMessageTime",
+                            unreadMsgCount,                 @"unreadMsgCount",
+                            isTop,                          @"isTop",
                            [(RCTextMessage*)conversation.lastestMessage content] , @"lastestMessage",
+
                             nil]];
-            NSLog(@"--------------------");
         }
-    
-    
-    
+        //格式化会话json对象
         NSError * parseError = nil;
         NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: &parseError ];
         NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
        
         resolve(jsonString);
 
+}
+
+//获得远程的消息
+RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
+                  targetId:(NSString *)targetId
+                  recordTime:(NSUInteger *)recordTime
+                  count:(int)count
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------1--------------");
+    
+    void (^successBlock)(NSArray *messages);
+    successBlock = ^(NSArray *messages) {
+        NSArray *events = [[NSArray alloc] initWithObjects:messages,nil];
+        resolve(@[[NSNull null], events]);
+    };
+    
+    void (^errorBlock)(RCErrorCode status);
+    errorBlock = ^(RCErrorCode status) {
+        NSString *errcode;
+        switch (status) {
+            case ERRORCODE_UNKNOWN:
+                errcode = @"ERRORCODE_UNKNOWN";
+                break;
+            case REJECTED_BY_BLACKLIST:
+                errcode = @"REJECTED_BY_BLACKLIST";
+                break;
+            case ERRORCODE_TIMEOUT:
+                errcode = @"ERRORCODE_TIMEOUT";
+                break;
+            case SEND_MSG_FREQUENCY_OVERRUN:
+                errcode = @"SEND_MSG_FREQUENCY_OVERRUN";
+                break;
+            case NOT_IN_DISCUSSION:
+                errcode = @"NOT_IN_DISCUSSION";
+                break;
+            case NOT_IN_GROUP:
+                errcode = @"NOT_IN_GROUP";
+                break;
+            case FORBIDDEN_IN_GROUP:
+                errcode = @"FORBIDDEN_IN_GROUP";
+                break;
+            case NOT_IN_CHATROOM:
+                errcode = @"NOT_IN_CHATROOM";
+                break;
+            case FORBIDDEN_IN_CHATROOM:
+                errcode = @"FORBIDDEN_IN_CHATROOM";
+                break;
+            case KICKED_FROM_CHATROOM:
+                errcode = @"KICKED_FROM_CHATROOM";
+                break;
+            case RC_CHATROOM_NOT_EXIST:
+                errcode = @"RC_CHATROOM_NOT_EXIST";
+                break;
+            case RC_CHATROOM_IS_FULL:
+                errcode = @"RC_CHATROOM_IS_FULL";
+                break;
+            case RC_CHANNEL_INVALID:
+                errcode = @"RC_CHANNEL_INVALID";
+                break;
+            case RC_NETWORK_UNAVAILABLE:
+                errcode = @"RC_NETWORK_UNAVAILABLE";
+                break;
+            case CLIENT_NOT_INIT:
+                errcode = @"CLIENT_NOT_INIT";
+                break;
+            case DATABASE_ERROR:
+                errcode = @"DATABASE_ERROR";
+                break;
+            case INVALID_PARAMETER:
+                errcode = @"INVALID_PARAMETER";
+                break;
+            case MSG_ROAMING_SERVICE_UNAVAILABLE:
+                errcode = @"MSG_ROAMING_SERVICE_UNAVAILABLE";
+                break;
+            case INVALID_PUBLIC_NUMBER:
+                errcode = @"INVALID_PUBLIC_NUMBER";
+                break;
+            default:
+                errcode = @"OTHER";
+                break;
+        }
+        reject(errcode, errcode, nil);
+    };
+    
+    NSLog(@"-------------1。2--------------");
+    [[self getClient] getRemoteHistoryMessages: conversationType targetId:targetId recordTime:recordTime count:count success:successBlock error:errorBlock];
 }
 
 -(RCIMClient *) getClient {

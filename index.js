@@ -29,13 +29,17 @@ export default {
     connectWithToken (token) {
         return RongCloudIMLib.connectWithToken(token);
     },
+    //获得会话列表
+    getConversationList (){
+        return RongCloudIMLib.getConversationList();
+    },
+    //获得会话中的聊天信息
+    getRemoteHistoryMessages(RCConversationType, targetId, recordTime, count){
+        return RongCloudIMLib.getRemoteHistoryMessages(RCConversationType, targetId, recordTime, count);
+    },
+    //发送消息
     sendTextMessage (conversationType, targetId, content) {
         return RongCloudIMLib.sendTextMessage(conversationType, targetId, content, content);
     },
-    abc (){
-        return RongCloudIMLib.abc();
-    },
-    disconnet (){
-        RongCloudIMLib.disconnet();
-    }
+    
 };

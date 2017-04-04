@@ -1,20 +1,22 @@
 # react-native-rongcloud-imlib
 Rongcloud IMLib Module For React Native
 
-[![Join the chat at https://gitter.im/lotosbin/react-native-rongcloud-imlib](https://badges.gitter.im/lotosbin/react-native-rongcloud-imlib.svg)](https://gitter.im/lotosbin/react-native-rongcloud-imlib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# samples
-https://github.com/lotosbin/react-native-rongcloud-imlib-sample/
+## ios config
+add framework
+- libopencore-amrnb.a
+- RongIMLib.framework
+上述两个文件放在工程ios目录下。 在工程YCParApp的Libraries上点右键，将这两个文件加到项目中
 
-# prepare
-```
-npm install -g rnpm
-```
-# usage
-```
-npm install --save https://github.com/lotosbin/react-native-rongcloud-imlib.git
-rnpm link react-native-rongcloud-imlib
-```
+- libsqlite3.tbd
+Target > YCParApp > BuildPhase > Link Binary With Libraries > + > 输入libsqlite3.tbd
+
+
+add framework search paths & library search paths
+- $(PROJECT_DIR)/../node_modules/react-native-rongcloud-imlib/ios/lib
+Target > YCParApp > Build Setting > Search Paths 
+
+
 
 ## android config
 - config AndroidManifest.xml
@@ -34,15 +36,6 @@ dependencies {
 }
 
 ```
-
-## ios config
-add framework
-- libopencore-amrnb.a
-- RongIMLib.framework
-- libsqlite3.tbd
-
-add framework search paths & library search paths
-- $(PROJECT_DIR)/../node_modules/react-native-rongcloud-imlib/ios/lib
 
 ## import
 ```

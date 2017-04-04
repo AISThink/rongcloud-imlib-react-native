@@ -3,18 +3,19 @@ Rongcloud IMLib Module For React Native
 
 
 ## ios config
-add framework
+1. 下面两个文件放在工程ios目录下。 在工程YCParApp的Libraries上点右键，将这两个文件加到项目中
 - libopencore-amrnb.a
 - RongIMLib.framework
-上述两个文件放在工程ios目录下。 在工程YCParApp的Libraries上点右键，将这两个文件加到项目中
 
+
+2. Target > YCParApp > BuildPhase > Link Binary With Libraries > + > 输入libsqlite3.tbd
 - libsqlite3.tbd
-Target > YCParApp > BuildPhase > Link Binary With Libraries > + > 输入libsqlite3.tbd
 
 
-add framework search paths & library search paths
-- $(PROJECT_DIR)/../node_modules/react-native-rongcloud-imlib/ios/lib
+3. add framework search paths & library search paths 
 Target > YCParApp > Build Setting > Search Paths 
+
+- $(PROJECT_DIR)/../node_modules/react-native-rongcloud-imlib/ios/lib
 
 
 

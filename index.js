@@ -40,6 +40,6 @@ export default {
     //发送消息
     sendTextMessage (conversationType, targetId, content) {
         return RongCloudIMLib.sendTextMessage(conversationType, targetId, content, content);
-    },
+    }
     
 };

@@ -1,4 +1,4 @@
-# react-native-rongcloud-imlib
+# rongcloud-imlib-react-native
 Rongcloud IMLib Module For React Native
 
 
@@ -15,7 +15,7 @@ Rongcloud IMLib Module For React Native
 3. add framework search paths & library search paths 
 Target > YCParApp > Build Setting > Search Paths 
 
-- $(PROJECT_DIR)/../node_modules/react-native-rongcloud-imlib/ios/lib
+- $(PROJECT_DIR)/../node_modules/rongcloud-imlib-react-nativ/ios/lib
 
 
 
@@ -25,22 +25,22 @@ Target > YCParApp > Build Setting > Search Paths
 ```
 // file: android/settings.gradle
 // ...
-include ':react-native-rongcloud-imlib'
-project(":react-native-rongcloud-imlib").projectDir = file("../node_modules/react-native-rongcloud-imlib/android")
+include ':rongcloud-imlib-react-native'
+project(":rongcloud-imlib-react-native").projectDir = file("../node_modules/rongcloud-imlib-react-native/android")
 ```
 ```
 // file: android/app/build.gradle
 
 dependencies {
     // ...
-    compile project(':react-native-rongcloud-imlib')
+    compile project(':rongcloud-imlib-react-native')
 }
 
 ```
 
 ## import
 ```
-import RongCloud from 'react-native-rongcloud-imlib'
+import RongCloud from 'rongcloud-imlib-react-native'
 ```
 ```
 

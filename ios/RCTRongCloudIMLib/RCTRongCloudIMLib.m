@@ -153,15 +153,25 @@ RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
                             nil]];
         }
         //格式化会话json对象
-        NSError * parseError = nil;
-        NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: &parseError ];
+        NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: nil ];
         NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
        
         resolve(jsonString);
 
 }
 
-//获得远程的消息
+/*!
+ 从服务器端获取之前的历史消息
+ 
+ @param conversationType    会话类型，不支持聊天室会话类型
+ @param targetId            目标会话ID
+ @param recordTime          最早的发送时间，第一次可以传0
+ @param count               需要获取的消息数量， 0< count <= 20
+ @param successBlock        获取成功的回调 [messages:获取到的历史消息数组]
+ @param errorBlock          获取失败的回调 [status:获取失败的错误码]
+ 
+ @discussion 此方法从服务器端获取之前的历史消息，但是必须先开通历史消息云存储功能。
+ */
 RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
                   targetId:(NSString *)targetId
                   recordTime:(NSUInteger *)recordTime
@@ -248,6 +258,71 @@ RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
     [[self getClient] getRemoteHistoryMessages: conversationType targetId:targetId recordTime:recordTime count:count success:successBlock error:errorBlock];
 }
 
+/*!
+ 获取某个会话中指定数量的最新消息实体
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @param count               需要获取的消息数量
+ @return                    消息实体RCMessage对象列表
+ 
+ @discussion 此方法会获取该会话中指定数量的最新消息实体，返回的消息实体按照时间从新到旧排列。
+ 如果会话中的消息数量小于参数count的值，会将该会话中的所有消息返回。
+ */
+RCT_EXPORT_METHOD(getLatestMessages:(int)conversationType
+                  targetId:(NSString *)targetId
+                  count:(int)count
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getLatestMessages start--------------");
+    
+    NSArray *msgArray = [[self getClient] getLatestMessages:conversationType targetId:targetId count:count];
+    if (msgArray) {
+        NSLog(@"msg:  %@", msgArray);
+        NSString *msgJsonString = [self convertMsgList:msgArray];
+        NSLog(@"msg:  %@", msgJsonString);
+        resolve(msgJsonString);
+    } else {
+        reject(@"no_lastest_local_msg", @"There were no lastest local msg", nil);
+    }
+    NSLog(@"-------------getLatestMessages End--------------");
+}
+/*!
+ 获取会话中，从指定消息之前、指定数量的最新消息实体
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @param oldestMessageId     截止的消息ID
+ @param count               需要获取的消息数量
+ @return                    消息实体RCMessage对象列表
+ 
+ @discussion 此方法会获取该会话中，oldestMessageId之前的、指定数量的最新消息实体，返回的消息实体按照时间从新到旧排列。
+ 返回的消息中不包含oldestMessageId对应那条消息，如果会话中的消息数量小于参数count的值，会将该会话中的所有消息返回。
+ 如：
+ oldestMessageId为10，count为2，会返回messageId为9和8的RCMessage对象列表。
+ */
+RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
+                  targetId:(NSString *)targetId
+                  oldestMessageId:(int)oldestMessageId
+                  count:(int)count
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getHistoryMessage start--------------");
+    
+    NSArray *msgArray = [[self getClient] getHistoryMessages:conversationType targetId:targetId oldestMessageId:oldestMessageId count:count];
+    if (msgArray) {
+        NSLog(@"msg:  %@", msgArray);
+        NSString *msgJsonString = [self convertMsgList:msgArray];
+        NSLog(@"msg:  %@", msgJsonString);
+        resolve(msgJsonString);
+    } else {
+        reject(@"no_local_msg", @"There were no local msg", nil);
+    }
+    NSLog(@"-------------getHistoryMessages End--------------");
+}
+
+
+
 -(RCIMClient *) getClient {
     return [RCIMClient sharedRCIMClient];
 }
@@ -318,6 +393,43 @@ RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
     body[@"errcode"] = @"0";
     
     [self sendEvent:@"onRongCloudMessageReceived" body:body];
+}
+/*
+    将RCMessage转化为NSMutableDictionary，以便之后转为json
+ */
+-(NSMutableDictionary *)convertMessage:(RCMessage *)message{
+    NSMutableDictionary *_message = [self getEmptyBody];
+    _message[@"targetId"] = message.targetId;
+    _message[@"senderUserId"] = message.senderUserId;
+    _message[@"messageId"] = [NSString stringWithFormat:@"%ld",message.messageId];
+    _message[@"sentTime"] = [NSString stringWithFormat:@"%lld",message.sentTime];
+    
+    if ([message.content isMemberOfClass:[RCTextMessage class]]) {
+        RCTextMessage *testMessage = (RCTextMessage *)message.content;
+        _message[@"content"] = testMessage.content;
+    }
+    else if([message.content isMemberOfClass:[RCImageMessage class]]) {
+        RCImageMessage *imageMessage = (RCImageMessage *)message.content;
+        _message[@"imageUrl"] = imageMessage.imageUrl;
+        _message[@"thumbnailImage"] = imageMessage.thumbnailImage;
+    }
+    return _message;
+}
+
+/*
+    将RCMessage的NSArray转为jsonString
+ */
+-(NSString *)convertMsgList:(NSArray *) msgList{
+    
+    NSMutableArray * arr = [[NSMutableArray alloc] init];
+    
+    for(RCMessage * message in msgList){
+        NSMutableDictionary *dict = [self convertMessage: message];
+        [arr addObject: dict];
+    }
+    NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: nil ];
+    NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return jsonString;
 }
 
 -(NSMutableDictionary *)getEmptyBody {

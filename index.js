@@ -81,9 +81,72 @@ export default {
         return RongCloudIMLib.sendImageMessage(conversationType, targetId, imagePath, '[图片]');
     },
     
-    //创建讨论组
+    
+    /*!
+     创建讨论组
+     @param name            讨论组名称
+     @param userIdList      用户ID的列表
+
+     @discussion 设置的讨论组名称长度不能超过40个字符，否则将会截断为前40个字符。
+     */
     createDiscussion(discName, userIdList){
         return RongCloudDiscLib.createDiscussion(discName, userIdList);
+    },
+
+    /*!
+     讨论组加人，将用户加入讨论组
+     @param discussionId    讨论组ID
+     @param userIdList      需要加入的用户ID列表
+     */
+    addMemberToDiscussion(discussionId, userIdList){
+        return RongCloudDiscLib.addMemberToDiscussion(discussionId, userIdList);
+
+    },
+
+    /*!
+     讨论组踢人，将用户移出讨论组
+     @param discussionId    讨论组ID
+     @param userId          需要移出的用户ID
+     */
+    removeMemberFromDiscussion(discussionId, userId){
+        return RongCloudDiscLib.removeMemberFromDiscussion(discussionId, userId);
+    },
+
+    /*!
+     退出当前讨论组
+     @param discussionId    讨论组ID
+     */
+    quitDiscussion(discussionId){
+        return RongCloudDiscLib.quitDiscussion(discussionId);
+    },
+
+    /*!
+     获取讨论组的信息
+     @param discussionId    需要获取信息的讨论组ID
+     */
+    getDiscussion(discussionId){
+        return RongCloudDiscLib.getDiscussion(discussionId);
+    },
+             
+    /*!
+     设置讨论组名称
+     @param targetId                需要设置的讨论组ID
+     @param discussionName          需要设置的讨论组名称，discussionName长度<=40
+     */
+    setDiscussionName(targetId, name){
+        return RongCloudDiscLib.setDiscussionName(targetId, name);
+    },
+                    
+    /*!
+     设置讨论组是否开放加人权限
+     @param targetId        讨论组ID
+     @param isOpen          是否开放加人权限
+     @discussion 讨论组默认开放加人权限，即所有成员都可以加人。
+     如果关闭加人权限之后，只有讨论组的创建者有加人权限。
+     */
+    setDiscussionInviteStatus(targetId, isOpen){
+        return RongCloudDiscLib.setDiscussionInviteStatus(targetId, isOpen);
     }
-    
+
+        
 };

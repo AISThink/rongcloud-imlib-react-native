@@ -685,6 +685,7 @@ RCT_EXPORT_METHOD(setDiscussionInviteStatus:(NSString *)targetId
     _disc[@"discussionId"]      = disc.discussionId;
     _disc[@"discussionName"]    = disc.discussionName;
     _disc[@"creatorId"]         = disc.creatorId;
+    _disc[@"isOpen"]         = [NSNumber numberWithInt:disc.inviteStatus];
     
     NSData  * memberData = [NSJSONSerialization dataWithJSONObject:disc.memberIdList options:NSJSONWritingPrettyPrinted error: nil ];
     NSString * memberString = [[NSString alloc] initWithData:memberData encoding:NSUTF8StringEncoding];

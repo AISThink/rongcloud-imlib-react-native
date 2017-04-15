@@ -4,6 +4,8 @@ import {
 } from 'react-native';
 
 const RongCloudIMLib = NativeModules.RongCloudIMLibModule;
+const RongCloudDiscLib = NativeModules.RongCloudDiscLibModule;
+
 
 var _onRongCloudMessageReceived = function(resp) {
 
@@ -73,5 +75,15 @@ export default {
     sendTextMessage (conversationType, targetId, content) {
         return RongCloudIMLib.sendTextMessage(conversationType, targetId, content, content);
     },
+
+    //发送图片信息
+    sendImageMessage(conversationType, targetId, imagePath){
+        return RongCloudIMLib.sendImageMessage(conversationType, targetId, imagePath, '[图片]');
+    },
+    
+    //创建讨论组
+    createDiscussion(discName, userIdList){
+        return RongCloudDiscLib.createDiscussion(discName, userIdList);
+    }
     
 };

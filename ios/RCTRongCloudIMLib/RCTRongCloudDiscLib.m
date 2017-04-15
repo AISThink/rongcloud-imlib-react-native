@@ -129,6 +129,7 @@ RCT_EXPORT_METHOD(addMemberToDiscussion:(NSString *)discussionId
         }
     };
     
+    //TODO:  Abstract the errorBlock and successBlock to Template function
     void (^errorBlock)(RCErrorCode status);
     errorBlock = ^(RCErrorCode status) {
         NSString *errcode;

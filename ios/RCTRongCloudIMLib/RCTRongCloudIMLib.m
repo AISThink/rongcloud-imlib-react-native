@@ -14,6 +14,7 @@
 
 RCT_EXPORT_MODULE(RongCloudIMLibModule)
 
+
 RCT_EXPORT_METHOD(initWithAppKey:(NSString *) appkey) {
     NSLog(@"initWithAppKey %@", appkey);
     [[self getClient] initWithAppKey:appkey];
@@ -104,6 +105,17 @@ RCT_EXPORT_METHOD(sendTextMessage:(NSString *)type
     
 }
 
+RCT_EXPORT_METHOD(sendImageMessage:(NSString *)type
+                  targetId:(NSString *)targetId
+                  imagePath:(NSString *) imagePath
+                  pushContent:(NSString *) pushContent
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    
+    RCImageMessage *messageContent = [RCImageMessage messageWithImageURI:imagePath];
+    [self sendImageMsg:type targetId:targetId content:messageContent pushContent:pushContent resolve:resolve reject:reject];
+}
+
 RCT_EXPORT_METHOD(getSDKVersion:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     NSString* version = [[self getClient] getSDKVersion];
@@ -178,7 +190,6 @@ RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
                   count:(int)count
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject){
-    NSLog(@"-------------1--------------");
     
     void (^successBlock)(NSArray *messages);
     successBlock = ^(NSArray *messages) {
@@ -254,7 +265,6 @@ RCT_EXPORT_METHOD(getRemoteHistoryMessages:(int)conversationType
         reject(errcode, errcode, nil);
     };
     
-    NSLog(@"-------------1。2--------------");
     [[self getClient] getRemoteHistoryMessages: conversationType targetId:targetId recordTime:recordTime count:count success:successBlock error:errorBlock];
 }
 
@@ -327,6 +337,9 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     return [RCIMClient sharedRCIMClient];
 }
 
+/*
+    发送文本信息
+ */
 -(void)sendMessage:(NSString *)type
           targetId:(NSString *)targetId
            content:(RCMessageContent *)content
@@ -358,6 +371,49 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     
     
     [[self getClient] sendMessage:conversationType targetId:targetId content:content pushContent:pushContent success:successBlock error:errorBlock];
+    
+}
+
+/*
+ 发送图片信息
+ */
+-(void)sendImageMsg:(NSString *)type
+          targetId:(NSString *)targetId
+           content:(RCMessageContent *)content
+       pushContent:(NSString *) pushContent
+           resolve:(RCTPromiseResolveBlock)resolve
+            reject:(RCTPromiseRejectBlock)reject {
+    
+    RCConversationType conversationType;
+    if([type isEqualToString:@"PRIVATE"]) {
+        conversationType = ConversationType_PRIVATE;
+    }
+    else if([type isEqualToString:@"DISCUSSION"]) {
+        conversationType = ConversationType_DISCUSSION;
+    }
+    else {
+        conversationType = ConversationType_SYSTEM;
+    }
+    
+    void (^successBlock)(long messageId);
+    successBlock = ^(long messageId) {
+        NSString* id = [NSString stringWithFormat:@"%ld",messageId];
+        resolve(id);
+    };
+    
+    void (^errorBlock)(RCErrorCode nErrorCode , long messageId);
+    errorBlock = ^(RCErrorCode nErrorCode , long messageId) {
+        reject(nil, nil, nil);
+    };
+    
+    void (^processBlock)(int progress, long messageId);
+    processBlock = ^(int progress, long messageId) {
+        //processFunc(progress, messageId);
+        NSLog(@"------upload image loading %d--------",progress);
+    };
+    
+    
+    [[self getClient] sendImageMessage:conversationType targetId:targetId content:content pushContent:pushContent progress:processBlock success:successBlock error:errorBlock];
     
 }
 

@@ -168,7 +168,7 @@ RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
             
         }
         else if([conversation.lastestMessage isMemberOfClass:[RCImageMessage class]]) {
-            dict[@"lastestMessage"] = @"你收到一张图片";
+            dict[@"lastestMessage"] = @"[图片]";
             dict[@"lastestMessagetype"] = @"image";
         }else{
             dict[@"lastestMessage"] = @"你收到一条消息";

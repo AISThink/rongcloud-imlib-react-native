@@ -131,45 +131,62 @@ RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush
 
 RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-
-        NSArray *conversationList = [[self getClient]
-                          getConversationList:@[@(ConversationType_PRIVATE),
-                                                @(ConversationType_DISCUSSION),
-                                                @(ConversationType_GROUP),
-                                                @(ConversationType_SYSTEM),
-                                                @(ConversationType_APPSERVICE),
-                                                @(ConversationType_PUBLICSERVICE)]];
     
-        NSMutableArray * arr = [[NSMutableArray alloc] init];
+    NSArray *conversationList = [[self getClient]
+                                 getConversationList:@[@(ConversationType_PRIVATE),
+                                                       @(ConversationType_DISCUSSION),
+                                                       @(ConversationType_GROUP),
+                                                       @(ConversationType_SYSTEM),
+                                                       @(ConversationType_APPSERVICE),
+                                                       @(ConversationType_PUBLICSERVICE)]];
     
-
-        for (RCConversation *conversation in conversationList) {
-          
-            //最后一条消息的发送日期
-//            NSDate*detaildate=[NSDate dateWithTimeIntervalSince1970:conversation.receivedTime];
-            NSNumber * receivedTime     =   [NSNumber numberWithLongLong: conversation.receivedTime];
-            NSNumber * converstationType=   [NSNumber numberWithUnsignedInteger:conversation.conversationType];
-            NSNumber * unreadMsgCount   =   [NSNumber numberWithLongLong: conversation.unreadMessageCount];
-            NSString * isTop            =   conversation.isTop?@"1":@"0";
+    NSMutableArray * arr = [[NSMutableArray alloc] init];
+    
+    
+    for (RCConversation *conversation in conversationList) {
+        
+        //最后一条消息的发送日期
+        //            NSDate*detaildate=[NSDate dateWithTimeIntervalSince1970:conversation.receivedTime];
+        NSNumber * receivedTime     =   [NSNumber numberWithLongLong: conversation.receivedTime];
+        NSNumber * converstationType=   [NSNumber numberWithUnsignedInteger:conversation.conversationType];
+        NSNumber * unreadMsgCount   =   [NSNumber numberWithLongLong: conversation.unreadMessageCount];
+        NSString * isTop            =   conversation.isTop?@"1":@"0";
+        
+        //组织会话json对象
+        NSMutableDictionary *dict=[NSMutableDictionary dictionaryWithObjectsAndKeys:conversation.targetId ,         @"targetId",
+                                   converstationType,              @"conversationType",
+                                   conversation.conversationTitle, @"conversationTitle",
+                                   receivedTime,                   @"lastMessageTime",
+                                   unreadMsgCount,                 @"unreadMsgCount",
+                                   isTop,                          @"isTop", nil];
+        
+        
+        if([conversation.lastestMessage isMemberOfClass:[RCTextMessage class]]){
+            RCTextMessage *testMessage = (RCTextMessage*)conversation.lastestMessage;
+            dict[@"lastestMessage"] = [testMessage content];
+            dict[@"lastestMessagetype"] = @"text";
             
-            //组织会话json对象
-            [arr addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                            conversation.targetId ,         @"targetId",
-                            converstationType,              @"conversationType",
-                            conversation.conversationTitle, @"conversationTitle",
-                            receivedTime,                   @"lastMessageTime",
-                            unreadMsgCount,                 @"unreadMsgCount",
-                            isTop,                          @"isTop",
-                           [(RCTextMessage*)conversation.lastestMessage content] , @"lastestMessage",
-
-                            nil]];
         }
-        //格式化会话json对象
-        NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: nil ];
-        NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        else if([conversation.lastestMessage isMemberOfClass:[RCImageMessage class]]) {
+            dict[@"lastestMessage"] = @"你收到一张图片";
+            dict[@"lastestMessagetype"] = @"image";
+        }else{
+            dict[@"lastestMessage"] = @"你收到一条消息";
+            dict[@"lastestMessagetype"] = @"others";
+        }
+        [arr addObject:dict]; 
        
-        resolve(jsonString);
-
+    }
+    
+    //格式化会话json对象
+    NSData  * jsonData = [NSJSONSerialization dataWithJSONObject:arr options:NSJSONWritingPrettyPrinted error: nil ];
+    
+    
+    NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    
+    
+    resolve(jsonString);
+    
 }
 
 /*!

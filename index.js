@@ -90,7 +90,29 @@ export default {
     sendImageMessage(conversationType, targetId, imagePath){
         return RongCloudIMLib.sendImageMessage(conversationType, targetId, imagePath, '[图片]');
     },
-    
+
+    /*!
+     获取所有未读消息数量
+     */
+    getTotalUnreadCount(){
+        return RongCloudIMLib.getTotalUnreadCount();
+    },
+    /*!
+     获取某个会话中的未读消息数量
+     @param conversationType    会话类型
+     @param targetId            目标会话ID
+     */
+    getUnreadCount(conversationType, targetId){
+        return RongCloudIMLib.getUnreadCount(conversationType, targetId);
+    },
+    /*!
+     清除某个会话中的所有未读消息数量
+     @param conversationType    会话类型
+     @param targetId            目标会话ID
+     */
+    clearMessagesUnreadStatus(conversationType, targetId){
+        return RongCloudIMLib.clearMessagesUnreadStatus(conversationType, targetId);
+    },
     
     /*!
      创建讨论组

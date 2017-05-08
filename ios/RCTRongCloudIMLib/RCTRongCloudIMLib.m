@@ -362,22 +362,69 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     NSLog(@"-------------getHistoryMessages End--------------");
 }
 
+/*!
+ 获取所有未读消息数量
+ */
+RCT_EXPORT_METHOD(getTotalUnreadCount:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getUnreadCount start--------------");
+    int count = [[self getClient] getTotalUnreadCount];
+    resolve([NSNumber numberWithUnsignedInteger:count]);
+    NSLog(@"-------------getUnreadCount end--------------");
+}
+
+
+/*!
+ 获取某个会话中的未读消息数量
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ */
+RCT_EXPORT_METHOD(getUnreadCount:(NSString *)type
+                  targetId:(NSString *)targetId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getUnreadCount start--------------");
+    int count = [[self getClient] getUnreadCount:[self getConversationType:type] targetId:targetId];
+    resolve([NSNumber numberWithUnsignedInteger:count]);
+    NSLog(@"-------------getUnreadCount end--------------");
+}
+
+
+/*!
+ 清除某个会话中的所有未读消息数量
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ */
+RCT_EXPORT_METHOD(clearMessagesUnreadStatus:(NSString *)type
+                  targetId:(NSString *)targetId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------clearMessagesUnreadStatus start--------------");
+    
+    @try {
+        bool result = [[self getClient] clearMessagesUnreadStatus:[self getConversationType:type] targetId:targetId];
+        if(result)
+            resolve(@[[NSNull null], @"discoclearMessagesUnreadStatusnnect success"]);
+        else
+            reject(@"discoclearMessagesUnreadStatusnnect fail", @"discoclearMessagesUnreadStatusnnect fail", nil);
+    }
+    @catch (NSException *exception) {
+        reject(@"discoclearMessagesUnreadStatusnnect fail", @"discoclearMessagesUnreadStatusnnect fail", nil);
+    }
+    
+    NSLog(@"-------------clearMessagesUnreadStatus end--------------");
+}
+
 
 
 -(RCIMClient *) getClient {
     return [RCIMClient sharedRCIMClient];
 }
 
-/*
-    发送文本信息
+/**
+ 将js字符转化为conversationType
  */
--(void)sendMessage:(NSString *)type
-          targetId:(NSString *)targetId
-           content:(RCMessageContent *)content
-       pushContent:(NSString *) pushContent
-           resolve:(RCTPromiseResolveBlock)resolve
-            reject:(RCTPromiseRejectBlock)reject {
-    
+-(RCConversationType) getConversationType:(NSString *) type{
     RCConversationType conversationType;
     if([type isEqualToString:@"PRIVATE"]) {
         conversationType = ConversationType_PRIVATE;
@@ -388,6 +435,28 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     else {
         conversationType = ConversationType_SYSTEM;
     }
+    return conversationType;
+}
+/*
+    发送文本信息
+ */
+-(void)sendMessage:(NSString *)type
+          targetId:(NSString *)targetId
+           content:(RCMessageContent *)content
+       pushContent:(NSString *) pushContent
+           resolve:(RCTPromiseResolveBlock)resolve
+            reject:(RCTPromiseRejectBlock)reject {
+    
+    RCConversationType conversationType = [self getConversationType:type];
+//    if([type isEqualToString:@"PRIVATE"]) {
+//        conversationType = ConversationType_PRIVATE;
+//    }
+//    else if([type isEqualToString:@"DISCUSSION"]) {
+//        conversationType = ConversationType_DISCUSSION;
+//    }
+//    else {
+//        conversationType = ConversationType_SYSTEM;
+//    }
     
     void (^successBlock)(long messageId);
     successBlock = ^(long messageId) {

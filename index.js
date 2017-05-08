@@ -31,6 +31,16 @@ export default {
     connectWithToken (token) {
         return RongCloudIMLib.connectWithToken(token);
     },
+    /*!
+     断开连接
+     @param isReceivePush  [true|false]  App在断开连接之后，是否还接收远程推送.
+     [[RCIM sharedRCIM] disconnect:YES]与[[RCIM sharedRCIM] disconnect]完全一致;
+     [[RCIM sharedRCIM] disconnect:NO]与[[RCIM sharedRCIM] logout]完全一致.
+     因此只封装disconnect:方法，通过传入参数来判断是否仍然接受推送信息。
+     */
+    disconnect(isReceivePush) {
+        return RongCloudIMLib.disconnect(isReceivePush);
+    },
     //获得会话列表
     getConversationList (){
         return RongCloudIMLib.getConversationList();

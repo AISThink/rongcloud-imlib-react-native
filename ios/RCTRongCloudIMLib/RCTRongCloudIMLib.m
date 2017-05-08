@@ -86,7 +86,14 @@ RCT_EXPORT_METHOD(connectWithToken:(NSString *) token
     if(connectStatus != ConnectionStatus_Connected
        && connectStatus != ConnectionStatus_Connecting){
         [[self getClient] connectWithToken:token success:successBlock error:errorBlock tokenIncorrect:tokenIncorrectBlock];
-    }    
+    }
+    else if(connectStatus == ConnectionStatus_Connected){
+        // resolve(@[[NSNull null], @"ConnectionStatus_Connected"]);
+        reject(@"ConnectionStatus_Connected", @"ConnectionStatus_Connected", nil);
+    }
+    else if(connectStatus == ConnectionStatus_Connecting){
+        reject(@"ConnectionStatus_Connecting", @"ConnectionStatus_Connecting", nil);
+    }
 
     //NSLog(@"connect_status %ld", (long)[[self getClient] getConnectionStatus]);
     
@@ -126,7 +133,14 @@ RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
                                             ) {
-    [[self getClient] disconnect:isReceivePush];
+//    [[self getClient] disconnect:isReceivePush];
+    @try {
+        [[self getClient] disconnect:isReceivePush];
+        resolve(@[[NSNull null], @"disconnect success"]);
+    }
+    @catch (NSException *exception) {
+        reject(@"disconnect fail", @"disconnect fail", nil);
+    }
 }
 
 RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve

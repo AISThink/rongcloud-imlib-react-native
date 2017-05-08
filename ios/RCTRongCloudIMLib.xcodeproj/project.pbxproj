@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A28CCC861EC0B47A00A80C74 /* RCTRongCloudDiscLib.m in Sources */ = {isa = PBXBuildFile; fileRef = A28CCC841EC0B47A00A80C74 /* RCTRongCloudDiscLib.m */; };
 		EF631A971CC22A4600AC9715 /* RCTRongCloudIMLib.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = EF631A961CC22A4600AC9715 /* RCTRongCloudIMLib.h */; };
 		EF631A991CC22A4600AC9715 /* RCTRongCloudIMLib.m in Sources */ = {isa = PBXBuildFile; fileRef = EF631A981CC22A4600AC9715 /* RCTRongCloudIMLib.m */; };
 		EF631B0F1CC28B2500AC9715 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF631B0E1CC28B2500AC9715 /* AssetsLibrary.framework */; };
@@ -41,6 +42,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A28CCC841EC0B47A00A80C74 /* RCTRongCloudDiscLib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTRongCloudDiscLib.m; sourceTree = "<group>"; };
+		A28CCC851EC0B47A00A80C74 /* RCTRongCloudDiscLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTRongCloudDiscLib.h; sourceTree = "<group>"; };
 		EF631A931CC22A4600AC9715 /* libRCTRongCloudIMLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTRongCloudIMLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF631A961CC22A4600AC9715 /* RCTRongCloudIMLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTRongCloudIMLib.h; sourceTree = "<group>"; };
 		EF631A981CC22A4600AC9715 /* RCTRongCloudIMLib.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTRongCloudIMLib.m; sourceTree = "<group>"; };
@@ -124,6 +127,8 @@
 		EF631A951CC22A4600AC9715 /* RCTRongCloudIMLib */ = {
 			isa = PBXGroup;
 			children = (
+				A28CCC841EC0B47A00A80C74 /* RCTRongCloudDiscLib.m */,
+				A28CCC851EC0B47A00A80C74 /* RCTRongCloudDiscLib.h */,
 				EF631A961CC22A4600AC9715 /* RCTRongCloudIMLib.h */,
 				EF631A981CC22A4600AC9715 /* RCTRongCloudIMLib.m */,
 			);
@@ -186,6 +191,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A28CCC861EC0B47A00A80C74 /* RCTRongCloudDiscLib.m in Sources */,
 				EF631A991CC22A4600AC9715 /* RCTRongCloudIMLib.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

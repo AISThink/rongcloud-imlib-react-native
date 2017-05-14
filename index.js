@@ -88,6 +88,9 @@ export default {
 
     //发送图片信息
     sendImageMessage(conversationType, targetId, imagePath){
+        if(imagePath.startsWith('file://')){
+            imagePath = imagePath.substr(7);
+        }
         return RongCloudIMLib.sendImageMessage(conversationType, targetId, imagePath, '[图片]');
     },
 

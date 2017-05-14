@@ -118,8 +118,13 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)type
                   pushContent:(NSString *) pushContent
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
+//    imagePath = [imagePath substringFromIndex:7];
+    UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+    RCImageMessage * messageContent = [RCImageMessage messageWithImage:image];
+//
+//    RCImageMessage *messageContent = [RCImageMessage messageWithImageURI:imagePath];
+//    messageContent.originalImage = image;
     
-    RCImageMessage *messageContent = [RCImageMessage messageWithImageURI:imagePath];
     [self sendImageMsg:type targetId:targetId content:messageContent pushContent:pushContent resolve:resolve reject:reject];
 }
 

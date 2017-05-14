@@ -572,7 +572,11 @@ RCT_EXPORT_METHOD(clearMessagesUnreadStatus:(NSString *)type
     else if([message.content isMemberOfClass:[RCImageMessage class]]) {
         RCImageMessage *imageMessage = (RCImageMessage *)message.content;
         _message[@"imageUrl"] = imageMessage.imageUrl;
-        _message[@"thumbnailImage"] = imageMessage.thumbnailImage;
+        /*imageMessage.thumbnailImage 是一个UIImage对象，不能直接这样json化
+         *如果需要缩略图信息，请将UIImage对象摊开JSON化
+         */
+//        _message[@"thumbnailImage"] = imageMessage.thumbnailImage;
+        
     }
     return _message;
 }

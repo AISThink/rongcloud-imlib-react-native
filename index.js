@@ -31,6 +31,16 @@ export default {
     connectWithToken (token) {
         return RongCloudIMLib.connectWithToken(token);
     },
+    /*!
+     断开连接
+     @param isReceivePush  [true|false]  App在断开连接之后，是否还接收远程推送.
+     [[RCIM sharedRCIM] disconnect:YES]与[[RCIM sharedRCIM] disconnect]完全一致;
+     [[RCIM sharedRCIM] disconnect:NO]与[[RCIM sharedRCIM] logout]完全一致.
+     因此只封装disconnect:方法，通过传入参数来判断是否仍然接受推送信息。
+     */
+    disconnect(isReceivePush) {
+        return RongCloudIMLib.disconnect(isReceivePush);
+    },
     //获得会话列表
     getConversationList (){
         return RongCloudIMLib.getConversationList();
@@ -78,9 +88,34 @@ export default {
 
     //发送图片信息
     sendImageMessage(conversationType, targetId, imagePath){
+        if(imagePath.startsWith('file://')){
+            imagePath = imagePath.substr(7);
+        }
         return RongCloudIMLib.sendImageMessage(conversationType, targetId, imagePath, '[图片]');
     },
-    
+
+    /*!
+     获取所有未读消息数量
+     */
+    getTotalUnreadCount(){
+        return RongCloudIMLib.getTotalUnreadCount();
+    },
+    /*!
+     获取某个会话中的未读消息数量
+     @param conversationType    会话类型
+     @param targetId            目标会话ID
+     */
+    getUnreadCount(conversationType, targetId){
+        return RongCloudIMLib.getUnreadCount(conversationType, targetId);
+    },
+    /*!
+     清除某个会话中的所有未读消息数量
+     @param conversationType    会话类型
+     @param targetId            目标会话ID
+     */
+    clearMessagesUnreadStatus(conversationType, targetId){
+        return RongCloudIMLib.clearMessagesUnreadStatus(conversationType, targetId);
+    },
     
     /*!
      创建讨论组

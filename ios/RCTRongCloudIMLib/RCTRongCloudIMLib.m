@@ -86,7 +86,14 @@ RCT_EXPORT_METHOD(connectWithToken:(NSString *) token
     if(connectStatus != ConnectionStatus_Connected
        && connectStatus != ConnectionStatus_Connecting){
         [[self getClient] connectWithToken:token success:successBlock error:errorBlock tokenIncorrect:tokenIncorrectBlock];
-    }    
+    }
+    else if(connectStatus == ConnectionStatus_Connected){
+        // resolve(@[[NSNull null], @"ConnectionStatus_Connected"]);
+        reject(@"ConnectionStatus_Connected", @"ConnectionStatus_Connected", nil);
+    }
+    else if(connectStatus == ConnectionStatus_Connecting){
+        reject(@"ConnectionStatus_Connecting", @"ConnectionStatus_Connecting", nil);
+    }
 
     //NSLog(@"connect_status %ld", (long)[[self getClient] getConnectionStatus]);
     
@@ -111,8 +118,13 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)type
                   pushContent:(NSString *) pushContent
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
+//    imagePath = [imagePath substringFromIndex:7];
+    UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+    RCImageMessage * messageContent = [RCImageMessage messageWithImage:image];
+//
+//    RCImageMessage *messageContent = [RCImageMessage messageWithImageURI:imagePath];
+//    messageContent.originalImage = image;
     
-    RCImageMessage *messageContent = [RCImageMessage messageWithImageURI:imagePath];
     [self sendImageMsg:type targetId:targetId content:messageContent pushContent:pushContent resolve:resolve reject:reject];
 }
 
@@ -126,7 +138,14 @@ RCT_EXPORT_METHOD(disconnect:(BOOL)isReceivePush
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
                                             ) {
-    [[self getClient] disconnect:isReceivePush];
+//    [[self getClient] disconnect:isReceivePush];
+    @try {
+        [[self getClient] disconnect:isReceivePush];
+        resolve(@[[NSNull null], @"disconnect success"]);
+    }
+    @catch (NSException *exception) {
+        reject(@"disconnect fail", @"disconnect fail", nil);
+    }
 }
 
 RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
@@ -168,7 +187,7 @@ RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve
             
         }
         else if([conversation.lastestMessage isMemberOfClass:[RCImageMessage class]]) {
-            dict[@"lastestMessage"] = @"你收到一张图片";
+            dict[@"lastestMessage"] = @"[图片]";
             dict[@"lastestMessagetype"] = @"image";
         }else{
             dict[@"lastestMessage"] = @"你收到一条消息";
@@ -348,22 +367,69 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     NSLog(@"-------------getHistoryMessages End--------------");
 }
 
+/*!
+ 获取所有未读消息数量
+ */
+RCT_EXPORT_METHOD(getTotalUnreadCount:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getUnreadCount start--------------");
+    int count = [[self getClient] getTotalUnreadCount];
+    resolve([NSNumber numberWithUnsignedInteger:count]);
+    NSLog(@"-------------getUnreadCount end--------------");
+}
+
+
+/*!
+ 获取某个会话中的未读消息数量
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ */
+RCT_EXPORT_METHOD(getUnreadCount:(NSString *)type
+                  targetId:(NSString *)targetId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------getUnreadCount start--------------");
+    int count = [[self getClient] getUnreadCount:[self getConversationType:type] targetId:targetId];
+    resolve([NSNumber numberWithUnsignedInteger:count]);
+    NSLog(@"-------------getUnreadCount end--------------");
+}
+
+
+/*!
+ 清除某个会话中的所有未读消息数量
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ */
+RCT_EXPORT_METHOD(clearMessagesUnreadStatus:(NSString *)type
+                  targetId:(NSString *)targetId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject){
+    NSLog(@"-------------clearMessagesUnreadStatus start--------------");
+    
+    @try {
+        bool result = [[self getClient] clearMessagesUnreadStatus:[self getConversationType:type] targetId:targetId];
+        if(result)
+            resolve(@[[NSNull null], @"discoclearMessagesUnreadStatusnnect success"]);
+        else
+            reject(@"discoclearMessagesUnreadStatusnnect fail", @"discoclearMessagesUnreadStatusnnect fail", nil);
+    }
+    @catch (NSException *exception) {
+        reject(@"discoclearMessagesUnreadStatusnnect fail", @"discoclearMessagesUnreadStatusnnect fail", nil);
+    }
+    
+    NSLog(@"-------------clearMessagesUnreadStatus end--------------");
+}
+
 
 
 -(RCIMClient *) getClient {
     return [RCIMClient sharedRCIMClient];
 }
 
-/*
-    发送文本信息
+/**
+ 将js字符转化为conversationType
  */
--(void)sendMessage:(NSString *)type
-          targetId:(NSString *)targetId
-           content:(RCMessageContent *)content
-       pushContent:(NSString *) pushContent
-           resolve:(RCTPromiseResolveBlock)resolve
-            reject:(RCTPromiseRejectBlock)reject {
-    
+-(RCConversationType) getConversationType:(NSString *) type{
     RCConversationType conversationType;
     if([type isEqualToString:@"PRIVATE"]) {
         conversationType = ConversationType_PRIVATE;
@@ -374,6 +440,28 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     else {
         conversationType = ConversationType_SYSTEM;
     }
+    return conversationType;
+}
+/*
+    发送文本信息
+ */
+-(void)sendMessage:(NSString *)type
+          targetId:(NSString *)targetId
+           content:(RCMessageContent *)content
+       pushContent:(NSString *) pushContent
+           resolve:(RCTPromiseResolveBlock)resolve
+            reject:(RCTPromiseRejectBlock)reject {
+    
+    RCConversationType conversationType = [self getConversationType:type];
+//    if([type isEqualToString:@"PRIVATE"]) {
+//        conversationType = ConversationType_PRIVATE;
+//    }
+//    else if([type isEqualToString:@"DISCUSSION"]) {
+//        conversationType = ConversationType_DISCUSSION;
+//    }
+//    else {
+//        conversationType = ConversationType_SYSTEM;
+//    }
     
     void (^successBlock)(long messageId);
     successBlock = ^(long messageId) {
@@ -484,7 +572,11 @@ RCT_EXPORT_METHOD(getHistoryMessages:(int)conversationType
     else if([message.content isMemberOfClass:[RCImageMessage class]]) {
         RCImageMessage *imageMessage = (RCImageMessage *)message.content;
         _message[@"imageUrl"] = imageMessage.imageUrl;
-        _message[@"thumbnailImage"] = imageMessage.thumbnailImage;
+        /*imageMessage.thumbnailImage 是一个UIImage对象，不能直接这样json化
+         *如果需要缩略图信息，请将UIImage对象摊开JSON化
+         */
+//        _message[@"thumbnailImage"] = imageMessage.thumbnailImage;
+        
     }
     return _message;
 }

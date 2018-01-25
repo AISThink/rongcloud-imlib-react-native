@@ -7,9 +7,9 @@
 //
 
 
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 #import "RCTEventDispatcher.h"
-#import "RCTBridge.h"
+//#import <ReactRCTBridge.h>
 #import <RongIMLib/RongIMLib.h>
 #import <RongIMLib/RCIMClient.h>
 

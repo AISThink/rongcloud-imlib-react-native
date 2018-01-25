@@ -6,9 +6,9 @@
 //  Copyright © 2016 lovebing.org. All rights reserved.
 //
 
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 #import "RCTEventDispatcher.h"
-#import "RCTBridge.h"
+//#import "RCTBridge.h"
 #import <RongIMLib/RongIMLib.h>
 #import <RongIMLib/RCIMClient.h>
 
